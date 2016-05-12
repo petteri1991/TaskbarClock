@@ -23,6 +23,7 @@ namespace TaskbarClock
 
         string dateFormat;
         string timeFormat;
+        int showonscreen = 0;
         Form fc = Application.OpenForms["calendar"];
         Icon ico;
         calendar calen = new calendar();
@@ -32,19 +33,26 @@ namespace TaskbarClock
         }
         private void Form1_Load(object sender, EventArgs e)
         {
-           
+            for (int x = 0; x < Screen.AllScreens.Length; x++)
+            {
+                int val = x + 1;
+                (contextMenuStrip1.Items[0] as ToolStripMenuItem).DropDownItems.Add(val.ToString());
+            }
+            (contextMenuStrip1.Items[0] as ToolStripMenuItem).DropDownItemClicked += new ToolStripItemClickedEventHandler(
+            contextMenuStrip1_ItemClicked);
             ico = notifyIcon1.Icon;
             this.Width = 82;
             this.BackColor = ColorTranslator.FromHtml("#002C49");
             //primary screen
             //this.Location = new Point(Screen.PrimaryScreen.Bounds.Width- this.Width, Screen.PrimaryScreen.Bounds.Height-this.Height);
             //secondary screen
-            this.Location = new Point(-this.Width, Screen.AllScreens[0].Bounds.Height - this.Height);
+            this.Location = new Point(Screen.AllScreens[showonscreen].Bounds.Right - this.Width, Screen.AllScreens[showonscreen].Bounds.Height - this.Height);
             dateFormat = CultureInfo.CurrentCulture.DateTimeFormat.ShortDatePattern;
             timeFormat = CultureInfo.CurrentCulture.DateTimeFormat.ShortTimePattern;
 
             label1.Text = DateTime.Now.ToString(timeFormat);
             label2.Text = DateTime.Now.ToString(dateFormat);
+
         }
 
 
@@ -87,11 +95,11 @@ namespace TaskbarClock
 
         private void timer1_Tick(object sender, EventArgs e)
         {
-            this.Location = new Point(- this.Width, Screen.AllScreens[0].Bounds.Height - this.Height);
+            this.Location = new Point(Screen.AllScreens[showonscreen].Bounds.Right - this.Width, Screen.AllScreens[showonscreen].Bounds.Height - this.Height);
             if(fc == null)
             {
 
-                if (IsForegroundFullScreen(Screen.AllScreens[0]))
+                if (IsForegroundFullScreen(Screen.AllScreens[showonscreen]))
                 {
                     TopMost = false;
                     //SendToBack();
@@ -186,6 +194,14 @@ namespace TaskbarClock
             }
         }
 
+
+        // ...
+
+        void contextMenuStrip1_ItemClicked(object sender, ToolStripItemClickedEventArgs e)
+        {
+            ToolStripItem item = e.ClickedItem;
+            showonscreen = int.Parse(item.ToString()) - 1;
+        }
         private void exitToolStripMenuItem_Click(object sender, EventArgs e)
         {
             Application.Exit();
@@ -200,5 +216,6 @@ namespace TaskbarClock
         {
             this.BackColor = ColorTranslator.FromHtml("#002C49");
         }
+
     }
 }
